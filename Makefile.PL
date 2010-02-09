@@ -7,6 +7,7 @@ WriteMakefile(
     VERSION_FROM      => 'lib/DBIx/Class/Tree/NestedSet.pm', # finds $VERSION
     PREREQ_PM         => {
       "parent" => 0,
+      "DBICx::TestDatabase" => 0,
     }, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/DBIx/Class/Tree/NestedSet.pm', # retrieve abstract
