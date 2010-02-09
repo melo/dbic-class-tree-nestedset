@@ -16,74 +16,71 @@ __PACKAGE__->mk_classdata( _tree_columns => {} );
 sub tree_columns {
     my ($class, $args) = @_;
 
-    if (defined $args) {
+    return $class->_tree_columns unless defined $args;
 
-        my ($root, $left, $right, $level) = map {
-            my $col = $args->{"${_}_column"};
-            croak("required param $_ not specified") if !defined $col;
-            $col;
-        } qw/root left right level/;
-
-        my $table        = $class->table;
-        my %join_cond    = ( "foreign.$root" => "self.$root" );
-
-        $class->belongs_to(
-            'root' => $class,
-            \%join_cond,{
-                where    => \"me.$left = 1",                              #"
-            },
-        );
-
-        $class->might_have(
-            'parent' => $class,
-            \%join_cond,{
-                where    => \"child.$left > me.$left AND child.$right < me.$right AND me.$level = child.$level - 1",       #"
-                from     => "$table me, $table child",
-            },
-        );
-
-        $class->has_many(
-            'nodes' => $class,
-            \%join_cond,{
-                order_by        => "me.$left",
-                cascade_delete  => 0,
-            },
-        );
-
-        $class->has_many(
-            'descendants' => $class,
-            \%join_cond, {
-                where           => \"me.$left > parent.$left AND me.$right < parent.$right",     #"
-                order_by        =>  "me.$left",
-                from            =>  "$table me, $table parent",
-                cascade_delete  => 0,
-            },
-        );
-
-        $class->has_many(
-            'children' => $class,
-            \%join_cond, {
-                where           => \"me.$left > parent.$left AND me.$right < parent.$right AND me.$level = parent.$level + 1",     #"
-                order_by        =>  "me.$left",
-                from            =>  "$table me, $table parent",
-                cascade_delete  => 0,
-            },
-        );
-
-        $class->has_many(
-            'ancestors' => $class,
-            \%join_cond, {
-                where           => \"child.$left > me.$left AND child.$right < me.$right",       #"
-                order_by        =>  "me.$right",
-                from            =>  "$table me, $table child",
-                cascade_delete  => 0,
-            },
-        );
-
-        $class->_tree_columns($args);
-    }
-
-    return $class->_tree_columns;
+    my ($root, $left, $right, $level) = map {
+        my $col = $args->{"${_}_column"};
+        croak("required param $_ not specified") if !defined $col;
+        $col;
+    } qw/root left right level/;
+    
+    my $table        = $class->table;
+    my %join_cond    = ( "foreign.$root" => "self.$root" );
+    
+    $class->belongs_to(
+        'root' => $class,
+        \%join_cond,{
+            where    => \"me.$left = 1",                              #"
+        },
+    );
+    
+    $class->might_have(
+        'parent' => $class,
+        \%join_cond,{
+            where    => \"child.$left > me.$left AND child.$right < me.$right AND me.$level = child.$level - 1",       #"
+            from     => "$table me, $table child",
+        },
+    );
+    
+    $class->has_many(
+        'nodes' => $class,
+        \%join_cond,{
+            order_by        => "me.$left",
+            cascade_delete  => 0,
+        },
+    );
+    
+    $class->has_many(
+        'descendants' => $class,
+        \%join_cond, {
+            where           => \"me.$left > parent.$left AND me.$right < parent.$right",     #"
+            order_by        =>  "me.$left",
+            from            =>  "$table me, $table parent",
+            cascade_delete  => 0,
+        },
+    );
+    
+    $class->has_many(
+        'children' => $class,
+        \%join_cond, {
+            where           => \"me.$left > parent.$left AND me.$right < parent.$right AND me.$level = parent.$level + 1",     #"
+            order_by        =>  "me.$left",
+            from            =>  "$table me, $table parent",
+            cascade_delete  => 0,
+        },
+    );
+    
+    $class->has_many(
+        'ancestors' => $class,
+        \%join_cond, {
+            where           => \"child.$left > me.$left AND child.$right < me.$right",       #"
+            order_by        =>  "me.$right",
+            from            =>  "$table me, $table child",
+            cascade_delete  => 0,
+        },
+    );
+    
+    return $class->_tree_columns($args);
 }
 
 # Insert a new node.
