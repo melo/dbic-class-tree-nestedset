@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Carp qw/croak/;
-use Data::Dumper;
 use parent 'DBIx::Class';
 
 our $VERSION = '0.01_01';
